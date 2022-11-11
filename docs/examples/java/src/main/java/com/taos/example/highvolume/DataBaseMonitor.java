@@ -55,8 +55,7 @@ public class DataBaseMonitor {
     public  Long getTableCount() throws SQLException {
         if (!stmt.isClosed()) {
             ResultSet result = stmt.executeQuery("show test.stables");
-            result.next();
-            return result.getLong(5);
+            return result.getRow();
         }
         return null;
     }
