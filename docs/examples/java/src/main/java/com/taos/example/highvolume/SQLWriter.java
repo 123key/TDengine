@@ -36,7 +36,7 @@ public class SQLWriter {
      * Maximum number of buffered records.
      * Flush action will be triggered if bufferedCount reached this value,
      */
-    private int maxBatchSize;
+    private int maxBatchSize = 64 * 1000;
 
 
     /**
@@ -131,14 +131,16 @@ public class SQLWriter {
             String tableName = entry.getKey();
             String values = entry.getValue();
             String q = tableName + " values " + values + " ";
-            if (sb.length() + q.length() > maxSQLLength) {
-                executeSQL(sb.toString());
-                logger.warn("increase maxSQLLength or decrease maxBatchSize to gain better performance");
-                sb = new StringBuilder("INSERT INTO ");
-            }
             sb.append(q);
+            if (sb.length() > maxSQLLength) {
+                executeSQL(sb.toString());
+                sb.setLength(0);
+                sb.append("INSERT INTO ");
+            }
         }
-        executeSQL(sb.toString());
+        if (sb.length() > "INSERT INTO ".length()) {
+            executeSQL(sb.toString());
+        }
         tbValues.clear();
         bufferedCount = 0;
     }
